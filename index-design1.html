@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa Iglesia del Señor</title>
+  <meta name="description" content="Te esperamos con las puertas abiertas. Jueves 20hs, Sábado 19hs, Domingo 18hs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;350;400;550;700&family=Playfair+Display:ital,wght@0,400;1,300&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-dark: #121613;
+      --bg-light: #FAFFFA;
+      --accent: #2BEE4B;
+      --text-light: #FAFFFA;
+      --text-dark: #121613;
+      --text-muted: #516254;
+      --text-secondary: #C8D2C8;
+      --border: #232924;
+      --overlay: rgba(46, 56, 48, 0.8);
+
+      --font-sans: 'Inter', 'TWK Lausanne', system-ui, sans-serif;
+      --font-serif: 'Playfair Display', 'Editorial New', Georgia, serif;
+      --font-display: 'Space Mono', 'PP Mondwest', monospace;
+
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+      --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+      --space-9: 80px; --space-10: 96px; --space-11: 120px; --space-12: 160px;
+
+      --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-full: 9999px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    ::selection { background: var(--accent); color: var(--bg-dark); }
+
+    /* ─── Loader ─── */
+    .loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-dark);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+    .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loader-pct {
+      font-family: var(--font-sans);
+      font-size: clamp(48px, 15vw, 200px);
+      font-weight: 550;
+      color: var(--text-light);
+    }
+    .loader-pct .cursor { color: var(--accent); animation: blink 1s steps(1) infinite; }
+    .loader-bar {
+      width: 48px; height: 3px;
+      background: var(--accent);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+    @keyframes pulse { 0%,100% { transform: scaleY(1); opacity: 1; } 50% { transform: scaleY(0.6); opacity: 0.5; } }
+
+    /* ─── Nav ─── */
+    .nav-wrap {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 24px clamp(24px, 5vw, 48px);
+      display: flex; justify-content: space-between; align-items: center;
+      mix-blend-mode: difference;
+      transition: background 0.3s ease;
+    }
+    .nav-wrap.scrolled { mix-blend-mode: normal; background: rgba(18,22,19,0.9); backdrop-filter: blur(12px); }
+    .nav-logo {
+      color: var(--text-light);
+      font-family: var(--font-sans);
+      font-size: 24px; font-weight: 700;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; align-items: center; gap: var(--space-7); }
+    .nav-links a {
+      color: var(--text-light);
+      font-family: var(--font-sans);
+      font-size: 16px; font-weight: 550;
+      text-decoration: none;
+      transition: opacity 0.3s;
+      opacity: 0.7;
+    }
+    .nav-links a:hover { opacity: 1; }
+    .menu-icon {
+      display: flex; flex-direction: column; gap: 6px;
+      cursor: pointer; padding: 8px;
+    }
+    .menu-icon .bar {
+      width: 24px; height: 3px;
+      background: var(--accent);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* ─── Page ─── */
+    .page { opacity: 0; transition: opacity 0.8s ease; }
+    .page.visible { opacity: 1; }
+
+    /* ─── Hero ─── */
+    .hero {
+      min-height: 100vh;
+      background: var(--bg-light);
+      padding: clamp(24px, 5vw, 48px);
+      display: flex; flex-direction: column;
+    }
+    .hero-content {
+      flex: 1;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      gap: 0;
+    }
+    .hero-line {
+      display: flex; align-items: center;
+      gap: clamp(16px, 3vw, 48px);
+      padding: clamp(4px, 1vh, 16px) 0;
+      opacity: 0; transform: translateY(40px);
+      animation: heroLineIn 1s cubic-bezier(0.6,0.05,0.1,1) forwards;
+    }
+    .hero-line:nth-child(1) { animation-delay: 0.1s; }
+    .hero-line:nth-child(2) { animation-delay: 0.25s; }
+    .hero-line:nth-child(3) { animation-delay: 0.4s; }
+    .hero-line:nth-child(4) { animation-delay: 0.55s; }
+    @keyframes heroLineIn { to { opacity: 1; transform: translateY(0); } }
+
+    .hero-text {
+      font-family: var(--font-sans);
+      font-size: clamp(48px, 10vw, 138px);
+      font-weight: 550;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text-dark);
+      white-space: nowrap;
+    }
+    .hero-imgs {
+      display: flex; gap: 8px;
+    }
+    .hero-img {
+      height: clamp(48px, 8vw, 110px);
+      aspect-ratio: 16/9;
+      background: var(--border);
+      border-radius: var(--radius-sm);
+      filter: grayscale(100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--text-muted); letter-spacing: 0.05em;
+      text-transform: uppercase;
+      overflow: hidden;
+    }
+
+    /* ─── Section Shared ─── */
+    section { padding: var(--space-11) clamp(24px, 5vw, 80px); }
+    .section-headline {
+      font-family: var(--font-sans);
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 550;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+    }
+    .body-text {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+    .body-small {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 350;
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+    }
+    .eyebrow {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      font-weight: 550;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: var(--space-4);
+    }
+
+    /* ─── Dark Section ─── */
+    .section-dark {
+      background: var(--bg-dark);
+      color: var(--text-light);
+    }
+    .section-dark .eyebrow { color: var(--accent); }
+    .section-dark .body-text { color: var(--text-light); opacity: 0.8; }
+
+    /* ─── Light Section ─── */
+    .section-light {
+      background: var(--bg-light);
+      color: var(--text-dark);
+    }
+    .section-light .eyebrow { color: var(--text-muted); }
+    .section-light .body-text { color: var(--text-dark); opacity: 0.7; }
+
+    /* ─── Two Column ─── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-7);
+      align-items: center;
+    }
+    .two-col.reverse { direction: rtl; }
+    .two-col.reverse > * { direction: ltr; }
+
+    /* ─── Scroll Reveal ─── */
+    .reveal-el {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal-el.reveal { opacity: 1; transform: translateY(0); }
+
+    /* ─── Image Card ─── */
+    .img-card {
+      overflow: hidden;
+      border-radius: var(--radius-sm);
+      background: var(--border);
+      aspect-ratio: 4/3;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); font-size: 12px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      filter: grayscale(100%);
+      transition: transform 0.4s ease, filter 0.4s ease;
+    }
+    .img-card:hover {
+      transform: scale(1.03);
+      filter: grayscale(80%);
+    }
+
+    /* ─── Marquee ─── */
+    .marquee-section {
+      padding: var(--space-8) 0;
+      overflow: hidden;
+    }
+    .marquee-track {
+      display: flex; width: max-content;
+      animation: marquee 40s linear infinite;
+      gap: var(--space-7);
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    .marquee-serif {
+      font-family: var(--font-serif);
+      font-size: clamp(64px, 12vw, 180px);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+    .marquee-display {
+      font-family: var(--font-display);
+      font-size: clamp(72px, 15vw, 220px);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+    }
+    .marquee-item { display: flex; align-items: center; gap: var(--space-7); }
+    .marquee-dot { color: var(--accent); font-size: 0.5em; }
+
+    /* ─── Portfolio Cards ─── */
+    .portfolio-card {
+      display: flex; align-items: center;
+      gap: var(--space-4);
+      padding: 44px 18px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      transition: background 0.3s ease;
+      cursor: default;
+    }
+    .portfolio-card:hover { background: var(--border); }
+    .portfolio-card .num {
+      font-family: var(--font-sans);
+      font-size: 14px; font-weight: 400;
+      color: var(--text-light);
+      opacity: 0.5;
+    }
+    .portfolio-card .label {
+      font-family: var(--font-sans);
+      font-size: 16px; font-weight: 550;
+      color: var(--text-light);
+      flex: 1;
+    }
+    .portfolio-card .arrow { color: var(--accent); font-size: 18px; transition: transform 0.3s; }
+    .portfolio-card:hover .arrow { transform: translateX(4px); }
+
+    /* ─── Stats ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-4);
+    }
+    .stat-card {
+      display: flex; flex-direction: column; gap: var(--space-2);
+      padding: var(--space-5);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .stat-value {
+      font-family: var(--font-serif);
+      font-size: clamp(32px, 4vw, 53px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--text-muted);
+    }
+    .stat-label {
+      font-family: var(--font-sans);
+      font-size: 12px; font-weight: 350;
+      color: var(--text-muted);
+      line-height: 1.1;
+    }
+
+    /* ─── Venn ─── */
+    .venn-wrap {
+      display: flex; align-items: center; gap: var(--space-10);
+      justify-content: center;
+    }
+    .venn-diagram {
+      position: relative;
+      width: clamp(300px, 40vw, 500px);
+      aspect-ratio: 1;
+      flex-shrink: 0;
+    }
+    .venn-circle {
+      position: absolute;
+      width: 60%; height: 60%;
+      border-radius: 50%;
+      background: var(--bg-dark);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      gap: 4px;
+    }
+    .venn-circle:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+    .venn-circle:nth-child(2) { bottom: 15%; left: 15%; }
+    .venn-circle:nth-child(3) { bottom: 15%; right: 15%; }
+    .venn-title {
+      font-family: var(--font-display);
+      font-size: clamp(16px, 2.5vw, 36px);
+      font-weight: 400;
+      color: var(--text-light);
+    }
+    .venn-sub {
+      font-family: var(--font-serif);
+      font-size: clamp(14px, 2vw, 28px);
+      font-weight: 300;
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    /* ─── Schedule ─── */
+    .schedule-list { margin-top: var(--space-6); }
+    .schedule-item {
+      display: flex; align-items: center;
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: var(--space-7);
+    }
+    .schedule-item:last-child { border-bottom: none; }
+    .schedule-day { font-family: var(--font-sans); font-size: 12px; font-weight: 350; letter-spacing: 0.01em; color: var(--text-muted); min-width: 80px; }
+    .schedule-time { font-family: var(--font-sans); font-size: 16px; font-weight: 400; color: var(--text-light); }
+    .schedule-desc { margin-left: auto; font-family: var(--font-sans); font-size: 10px; font-weight: 550; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); }
+
+    .tag-group { display: flex; gap: var(--space-2); margin-top: var(--space-6); }
+    .tag {
+      font-family: var(--font-sans); font-size: 10px; font-weight: 550;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-light);
+      opacity: 0.6;
+      transition: opacity 0.3s, border-color 0.3s;
+    }
+    .tag:hover { opacity: 1; border-color: var(--accent); }
+
+    /* ─── Buttons ─── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 12px;
+      padding: 18px 27px;
+      background: var(--accent);
+      color: var(--text-dark);
+      border: none; border-radius: var(--radius-sm);
+      font-family: var(--font-sans);
+      font-size: 10px; font-weight: 550;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(43,238,75,0.3);
+    }
+    .btn .arrow { display: inline-block; transition: transform 0.2s; }
+    .btn:hover .arrow { transform: translateX(4px); }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+    }
+    .btn-outline:hover { background: var(--accent); color: var(--text-dark); box-shadow: 0 4px 12px rgba(43,238,75,0.2); }
+
+    /* ─── Map ─── */
+    .map-frame {
+      margin-top: var(--space-7);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .map-frame iframe {
+      display: block; width: 100%; height: 380px; border: 0;
+      filter: invert(1) hue-rotate(180deg) saturate(0.15) brightness(0.8);
+    }
+
+    /* ─── Footer ─── */
+    footer {
+      background: var(--bg-dark);
+      padding: var(--space-9) clamp(24px, 5vw, 48px) var(--space-7);
+      color: var(--text-light);
+    }
+    .footer-email {
+      font-family: var(--font-sans);
+      font-size: clamp(28px, 4vw, 56px);
+      font-weight: 550;
+      color: var(--text-light);
+      text-decoration: none;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    .footer-email:hover { color: var(--accent); }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-7);
+      margin-top: var(--space-7);
+      padding-top: var(--space-5);
+      border-top: 1px solid var(--border);
+    }
+    .footer-col h4 {
+      font-family: var(--font-sans);
+      font-size: 12px; font-weight: 350;
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+    }
+    .footer-col a {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 16px; font-weight: 550;
+      color: var(--text-light);
+      text-decoration: none;
+      margin-bottom: var(--space-2);
+      transition: opacity 0.3s;
+    }
+    .footer-col a:hover { opacity: 0.7; }
+    .footer-meta {
+      display: flex; justify-content: space-between;
+      margin-top: var(--space-7);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .venn-wrap { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+      .two-col.reverse { direction: ltr; }
+      .hero-text { font-size: 48px; }
+      .hero-line { flex-direction: column; align-items: flex-start; }
+      .hero-imgs { width: 100%; }
+      .hero-img { height: 80px; flex: 1; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .nav-links a:not(.menu-icon) { display: none; }
+      section { padding: 64px 24px; }
+      .schedule-item { flex-wrap: wrap; gap: 8px; }
+      .schedule-desc { margin-left: 0; }
+      .marquee-serif { font-size: 64px; }
+      .marquee-display { font-size: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="loader-pct" id="loaderPct">0<span class="cursor">_</span></div>
+    <div class="loader-bar"></div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-wrap" id="navWrap">
+    <div class="nav-logo" style="display:flex;align-items:center;gap:14px">
+      <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank" style="color:var(--text-light);display:flex" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/@sids2025" target="_blank" style="color:var(--text-light);display:flex" aria-label="YouTube">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/sids_iglesia/" target="_blank" style="color:var(--text-light);display:flex" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+      </a>
+    </div>
+    <div class="nav-links">
+      <a href="#about">Quiénes Somos</a>
+      <a href="#reuniones">Reuniones</a>
+      <a href="#ubicacion">Ubicación</a>
+      <div class="menu-icon">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page -->
+  <div class="page" id="page">
+
+    <!-- Hero (Light BG) -->
+    <div class="hero">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <div class="hero-line">
+          <span class="hero-text">SANTA</span>
+          <div class="hero-imgs">
+            <div class="hero-img">Img 01</div>
+            <div class="hero-img">Img 02</div>
+          </div>
+        </div>
+        <div class="hero-line">
+          <span class="hero-text">IGLESIA</span>
+          <div class="hero-imgs">
+            <div class="hero-img">Img 03</div>
+            <div class="hero-img">Img 04</div>
+          </div>
+        </div>
+        <div class="hero-line">
+          <span class="hero-text">DEL</span>
+          <div class="hero-imgs">
+            <div class="hero-img">Img 05</div>
+            <div class="hero-img">Img 06</div>
+          </div>
+        </div>
+        <div class="hero-line">
+          <span class="hero-text">SEÑOR</span>
+          <div class="hero-imgs">
+            <div class="hero-img">Img 07</div>
+            <div class="hero-img">Img 08</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px 0 0;font-family:var(--font-sans);font-size:13px;color:var(--text-muted);letter-spacing:0.05em;display:flex;justify-content:space-between">
+        <span>Jueves 20:00 hs · Domingo 18:00 hs</span>
+        <span style="color:var(--accent)">↓ Scroll</span>
+      </div>
+    </div>
+
+    <!-- Marquee 1 (Editorial Serif, Light BG) -->
+    <div class="marquee-section" style="background:var(--bg-light)">
+      <div class="marquee-track" style="color:var(--text-dark)">
+        <span class="marquee-item"><span class="marquee-serif">Santa Iglesia del Señor</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Fe</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Esperanza</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Amor</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Santa Iglesia del Señor</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Fe</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Esperanza</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-serif">Amor</span><span class="marquee-dot">◆</span></span>
+      </div>
+    </div>
+
+    <!-- Quiénes Somos (Dark BG) -->
+    <section class="section-dark" id="about">
+      <div class="two-col reverse" style="max-width:1400px;margin:0 auto">
+        <div class="reveal-el">
+          <div class="eyebrow">01 — Quiénes Somos</div>
+          <h2 class="section-headline" style="margin-bottom:var(--space-5)">Una iglesia<br>comprometida con<br>el Evangelio</h2>
+          <p class="body-text" style="margin-bottom:var(--space-4)">Santa Iglesia del Señor es una Iglesia Cristiana Evangélica comprometida con la predicación del Evangelio de Jesucristo, la enseñanza de la Palabra de Dios y el acompañamiento espiritual de las familias y la comunidad.</p>
+          <p class="body-text">Nuestra congregación es guiada por los Obispos Dr. Edgardo Norberto Montenegro y Dra. Magdalena Ciulla De Montenegro, quienes desarrollan su ministerio con dedicación, amor y servicio.</p>
+        </div>
+        <div class="img-card reveal-el" style="display:flex;align-items:center;justify-content:center;color:var(--fg-muted);font-size:12px;letter-spacing:0.08em">imagen</div>
+      </div>
+    </section>
+
+    <!-- Philosophy / Statement (Light BG) -->
+    <section class="section-light" style="text-align:center">
+      <div style="max-width:900px;margin:0 auto">
+        <p class="marquee-serif" style="font-size:clamp(28px,4vw,64px);color:var(--text-dark);font-style:italic">Creemos en el poder transformador de Jesucristo y trabajamos para que cada persona pueda conocer el amor de Dios.</p>
+      </div>
+    </section>
+
+    <!-- Nuestra Iglesia (Dark BG) -->
+    <section class="section-dark">
+      <div class="two-col" style="max-width:1400px;margin:0 auto">
+        <div class="img-card reveal-el" style="display:flex;align-items:center;justify-content:center;color:var(--fg-muted);font-size:12px;letter-spacing:0.08em">imagen</div>
+        <div class="reveal-el">
+          <div class="eyebrow">02 — Nuestra Iglesia</div>
+          <h2 class="section-headline" style="margin-bottom:var(--space-5)">Espacios para la<br>adoración y el<br>crecimiento espiritual</h2>
+          <p class="body-text" style="margin-bottom:var(--space-4)">En Santa Iglesia del Señor contamos con espacios especialmente preparados para la adoración, la enseñanza bíblica, la comunión y el crecimiento espiritual.</p>
+          <p class="body-text">Te invitamos a ser parte de nuestras reuniones. ¡Las puertas están abiertas para vos y tu familia!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Portfolio / Valores (Dark BG) -->
+    <section class="section-dark">
+      <div style="max-width:1400px;margin:0 auto">
+        <div class="eyebrow">03 — Nuestros Valores</div>
+        <h2 class="section-headline" style="margin-bottom:var(--space-7)">Fe · Esperanza · Amor</h2>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5)">
+          <div class="portfolio-card">
+            <span class="num">01</span>
+            <span class="label">Fe</span>
+            <span class="arrow">→</span>
+          </div>
+          <div class="portfolio-card">
+            <span class="num">02</span>
+            <span class="label">Esperanza</span>
+            <span class="arrow">→</span>
+          </div>
+          <div class="portfolio-card">
+            <span class="num">03</span>
+            <span class="label">Amor</span>
+            <span class="arrow">→</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Venn / Approach (Light BG) -->
+    <section class="section-light">
+      <div style="max-width:1400px;margin:0 auto">
+        <div class="venn-wrap">
+          <div class="venn-diagram">
+            <div class="venn-circle"><div class="venn-title">Fe</div><div class="venn-sub">Creer</div></div>
+            <div class="venn-circle"><div class="venn-title">Esperanza</div><div class="venn-sub">Confiar</div></div>
+            <div class="venn-circle"><div class="venn-title">Amor</div><div class="venn-sub">Servir</div></div>
+          </div>
+          <div style="max-width:480px">
+            <div class="eyebrow">Nuestro Fundamento</div>
+            <h2 class="section-headline" style="margin-bottom:var(--space-4)">Fe · Esperanza · Amor</h2>
+            <p class="body-text" style="margin-bottom:var(--space-6)">Tres pilares que guían nuestra misión y visión como iglesia.</p>
+            <a class="btn" href="https://www.instagram.com/sids_iglesia/" target="_blank">Conocé más <span class="arrow">→</span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marquee 2 (Display Mono, Dark BG) -->
+    <div class="marquee-section section-dark">
+      <div class="marquee-track">
+        <span class="marquee-item"><span class="marquee-display">LAS PUERTAS ESTÁN ABIERTAS</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-display">TE ESPERAMOS</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-display">SUMATE A NUESTRA COMUNIDAD</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-display">LAS PUERTAS ESTÁN ABIERTAS</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-display">TE ESPERAMOS</span><span class="marquee-dot">◆</span></span>
+        <span class="marquee-item"><span class="marquee-display">SUMATE A NUESTRA COMUNIDAD</span><span class="marquee-dot">◆</span></span>
+      </div>
+    </div>
+
+    <!-- Stats (Dark BG) -->
+    <section class="section-dark">
+      <div style="max-width:1400px;margin:0 auto">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" data-count="2019">0</div><div class="stat-label">Fundación</div></div>
+          <div class="stat-card"><div class="stat-value" data-count="100">0%</div><div class="stat-label">Compromiso</div></div>
+          <div class="stat-card"><div class="stat-value" data-count="3">0</div><div class="stat-label">Reuniones Semanales</div></div>
+          <div class="stat-card"><div class="stat-value" data-count="100">0+</div><div class="stat-label">Familias</div></div>
+          <div class="stat-card"><div class="stat-value" data-count="1">0</div><div class="stat-label">Misión</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reuniones (Dark BG) -->
+    <section class="section-dark" id="reuniones">
+      <div class="two-col" style="max-width:1400px;margin:0 auto">
+        <div class="img-card reveal-el" style="display:flex;align-items:center;justify-content:center;color:var(--fg-muted);font-size:12px;letter-spacing:0.08em">imagen</div>
+        <div class="reveal-el">
+          <div class="eyebrow">04 — Nuestras Reuniones</div>
+          <h2 class="section-headline" style="margin-bottom:var(--space-1)">Jueves y Domingos</h2>
+          <p class="body-text" style="margin-bottom:0">Te esperamos con las puertas abiertas.</p>
+          <div class="schedule-list">
+            <div class="schedule-item">
+              <span class="schedule-day">Jueves</span>
+              <span class="schedule-time">20:00 hs</span>
+              <span class="schedule-desc">General</span>
+            </div>
+            <div class="schedule-item">
+              <span class="schedule-day">Sábados</span>
+              <span class="schedule-time">19:00 hs</span>
+              <span class="schedule-desc">Jóvenes</span>
+            </div>
+            <div class="schedule-item">
+              <span class="schedule-day">Domingos</span>
+              <span class="schedule-time">18:00 hs</span>
+              <span class="schedule-desc">General</span>
+            </div>
+          </div>
+          <div class="tag-group">
+            <span class="tag">Alabanza</span>
+            <span class="tag">Adoración</span>
+            <span class="tag">Comunión</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ubicación (Light BG) -->
+    <section class="section-light" id="ubicacion" style="text-align:center">
+      <div style="max-width:1400px;margin:0 auto">
+        <div class="eyebrow">05 — Nuestra Ubicación</div>
+        <h2 class="section-headline" style="margin-bottom:var(--space-1)">Ing. Allan, Buenos Aires</h2>
+        <div class="map-frame">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d204.60280482687168!2d-58.190065407558976!3d-34.86514946029389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a2d78a02f43253%3A0xf118fbba9ff02ca!2sColegio%20Jes%C3%BAs%20de%20Nazareth!5e0!3m2!1ses!2sar!4v1780336542615!5m2!1ses!2sar" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación"></iframe>
+        </div>
+        <a class="btn btn-outline" href="https://www.google.com/maps?q=Colegio+Jes%C3%BAs+de+Nazareth" target="_blank" style="margin-top:var(--space-6)">Ver en Google Maps <span class="arrow">→</span></a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <a class="footer-email" href="https://www.instagram.com/sids_iglesia/" target="_blank">Sumate a nuestra comunidad →</a>
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4>Síguenos</h4>
+          <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank">Facebook</a>
+          <a href="https://www.youtube.com/@sids2025" target="_blank">YouTube</a>
+          <a href="https://www.instagram.com/sids_iglesia/" target="_blank">Instagram</a>
+        </div>
+        <div class="footer-col">
+          <h4>Reuniones</h4>
+          <a href="#">Jueves 20:00 hs</a>
+          <a href="#">Sábados 19:00 hs</a>
+          <a href="#">Domingos 18:00 hs</a>
+        </div>
+        <div class="footer-col">
+          <h4>Dirección</h4>
+          <a href="https://www.google.com/maps?q=Colegio+Jes%C3%BAs+de+Nazareth" target="_blank">Colegio Jesús de Nazareth</a>
+          <a href="#">Ing. Allan, Buenos Aires</a>
+        </div>
+      </div>
+      <div class="footer-meta">
+        <span>&copy; 2026 Santa Iglesia del Señor</span>
+        <span>Con amor, para la gloria de Dios</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // ─── Loader ───
+    (function() {
+      const loader = document.getElementById('loader');
+      const pctEl = document.getElementById('loaderPct');
+      const page = document.getElementById('page');
+      let count = 0;
+      const interval = setInterval(() => {
+        count += Math.floor(Math.random() * 6) + 2;
+        if (count > 100) count = 100;
+        pctEl.innerHTML = count + '<span class="cursor">_</span>';
+        if (count >= 100) {
+          clearInterval(interval);
+          setTimeout(() => { loader.classList.add('hidden'); page.classList.add('visible'); }, 300);
+        }
+      }, 100);
+    })();
+
+    // ─── Nav scroll ───
+    (function() {
+      const nav = document.getElementById('navWrap');
+      window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 80), { passive: true });
+    })();
+
+    // ─── Intersection Observer ───
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal-el').forEach(el => observer.observe(el));
+    })();
+
+    // ─── Stat counters ───
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const raw = el.dataset.count;
+            const num = parseInt(raw) || 0;
+            const suffix = el.textContent.replace(/[\d]/g, '');
+            let current = 0;
+            const step = Math.max(1, Math.floor(num / 40));
+            const interval = setInterval(() => {
+              current += step;
+              if (current >= num) { current = num; clearInterval(interval); }
+              el.textContent = current + suffix;
+            }, 30);
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      document.querySelectorAll('.stat-value[data-count]').forEach(el => observer.observe(el));
+    })();
+
+    // ─── Smooth scroll ───
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>

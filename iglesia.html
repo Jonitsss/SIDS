@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Santa Iglesia del Señor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a08;
+    --fg: #f5f0e8;
+    --accent: #c8a96e;
+    --accent2: #8b6914;
+    --muted: #6b6457;
+    --nav-h: 72px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px;
+    mix-blend-mode: normal;
+    transition: background .4s, backdrop-filter .4s;
+  }
+  nav.scrolled {
+    background: rgba(10,10,8,.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(200,169,110,.15);
+  }
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--fg);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-logo .cross {
+    width: 18px; height: 18px;
+    position: relative;
+    display: inline-block;
+  }
+  .nav-logo .cross::before,
+  .nav-logo .cross::after {
+    content: '';
+    position: absolute;
+    background: var(--accent);
+  }
+  .nav-logo .cross::before { width: 2px; height: 18px; left: 8px; top: 0; }
+  .nav-logo .cross::after  { width: 18px; height: 2px; left: 0; top: 6px; }
+
+  .nav-links {
+    display: flex;
+    gap: 40px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--fg);
+    text-decoration: none;
+    opacity: .7;
+    transition: opacity .2s, color .2s;
+  }
+  .nav-links a:hover { opacity: 1; color: var(--accent); }
+
+  .nav-cta {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+    border: 1px solid var(--accent);
+    padding: 10px 20px;
+    transition: background .2s, color .2s;
+  }
+  .nav-cta:hover { background: var(--accent); color: var(--bg); }
+
+  /* ── HERO ── */
+  .hero {
+    height: 100vh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom, rgba(10,10,8,.3) 0%, rgba(10,10,8,.0) 30%, rgba(10,10,8,.6) 80%, rgba(10,10,8,1) 100%),
+      url('https://images.unsplash.com/photo-1438232992991-995b671e4668?w=1600&q=80') center/cover no-repeat;
+    transform: scale(1.05);
+    transition: transform 8s ease-out;
+  }
+  .hero-bg.loaded { transform: scale(1); }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp .8s .3s forwards;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 120px);
+    font-weight: 900;
+    line-height: .95;
+    letter-spacing: -.02em;
+    max-width: 900px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp .9s .5s forwards;
+  }
+  .hero-title em { font-style: italic; color: var(--accent); }
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    right: 48px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeUp .8s 1.2s forwards;
+  }
+  .hero-scroll::before {
+    content: '';
+    display: block;
+    width: 1px;
+    height: 40px;
+    background: var(--muted);
+    animation: scrollLine 1.5s 1.5s infinite;
+  }
+  @keyframes scrollLine {
+    0%,100% { opacity: .3; transform: scaleY(1); }
+    50%      { opacity: 1;  transform: scaleY(.5); }
+  }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    border-top: 1px solid rgba(200,169,110,.2);
+    border-bottom: 1px solid rgba(200,169,110,.2);
+    overflow: hidden;
+    padding: 20px 0;
+    background: rgba(200,169,110,.04);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 80px;
+    white-space: nowrap;
+    animation: marquee 22s linear infinite;
+  }
+  .marquee-item {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: .1em;
+    color: var(--accent);
+    opacity: .7;
+    flex-shrink: 0;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ── STORY SECTION ── */
+  .story {
+    padding: 120px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .story-images {
+    position: relative;
+    height: 600px;
+  }
+  .story-img {
+    position: absolute;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .story-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .story-img:nth-child(1) { width: 65%; height: 70%; top: 0; left: 0; }
+  .story-img:nth-child(2) { width: 50%; height: 55%; bottom: 0; right: 0;
+    border: 3px solid var(--accent); }
+  .story-text {}
+  .section-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 4vw, 60px);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 32px;
+  }
+  .section-title em { font-style: italic; color: var(--accent); }
+  .section-body {
+    font-size: 18px;
+    line-height: 1.8;
+    color: rgba(245,240,232,.75);
+    font-weight: 300;
+    margin-bottom: 20px;
+  }
+  .divider-line {
+    width: 60px; height: 1px;
+    background: var(--accent);
+    margin: 40px 0;
+  }
+
+  /* ── FULLBLEED QUOTE ── */
+  .fullbleed {
+    position: relative;
+    height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  .fullbleed-bg {
+    position: absolute;
+    inset: 0;
+    background: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&q=80') center/cover no-repeat;
+    filter: brightness(.3) saturate(.6);
+    transform: scale(1.1);
+    will-change: transform;
+  }
+  .fullbleed-content {
+    position: relative;
+    z-index: 1;
+    padding: 0 48px;
+    max-width: 900px;
+  }
+  .fullbleed-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 56px);
+    font-style: italic;
+    line-height: 1.3;
+    margin-bottom: 24px;
+  }
+  .fullbleed-attr {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* ── SCHEDULE ── */
+  .schedule-section {
+    padding: 120px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .schedule-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 60px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(200,169,110,.2);
+  }
+  .schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: rgba(200,169,110,.15);
+    border: 1px solid rgba(200,169,110,.15);
+  }
+  .schedule-card {
+    background: var(--bg);
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+    transition: background .3s;
+  }
+  .schedule-card:hover { background: rgba(200,169,110,.06); }
+  .schedule-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 0;
+    background: var(--accent);
+    transition: height .4s;
+  }
+  .schedule-card:hover::before { height: 100%; }
+  .schedule-day {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .schedule-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 12px;
+    letter-spacing: -.02em;
+  }
+  .schedule-desc {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── STATS ── */
+  .stats-section {
+    padding: 100px 48px;
+    border-top: 1px solid rgba(200,169,110,.15);
+    border-bottom: 1px solid rgba(200,169,110,.15);
+    background: rgba(200,169,110,.03);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: rgba(200,169,110,.1);
+    max-width: 1200px;
+    margin: 0 auto;
+    border: 1px solid rgba(200,169,110,.1);
+  }
+  .stat-item {
+    background: var(--bg);
+    padding: 48px 32px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(40px, 5vw, 72px);
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -.03em;
+    display: block;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── LEADERS ── */
+  .leaders-section {
+    padding: 120px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .leaders-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+  }
+  .leader-card {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 40px;
+    align-items: start;
+    padding: 40px;
+    border: 1px solid rgba(200,169,110,.15);
+    transition: border-color .3s;
+  }
+  .leader-card:hover { border-color: rgba(200,169,110,.5); }
+  .leader-photo {
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    position: relative;
+  }
+  .leader-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(.3) contrast(1.05);
+    transition: filter .4s;
+  }
+  .leader-card:hover .leader-photo img { filter: grayscale(0) contrast(1.1); }
+  .leader-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 60%, rgba(10,10,8,.5));
+  }
+  .leader-info { padding-top: 8px; }
+  .leader-title-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .leader-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .leader-bio {
+    font-size: 15px;
+    color: rgba(245,240,232,.65);
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* ── SECOND FULLBLEED ── */
+  .fullbleed2-bg {
+    background: url('https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&q=80') center/cover no-repeat;
+    filter: brightness(.25) saturate(.5);
+  }
+
+  /* ── LOCATION ── */
+  .location-section {
+    padding: 120px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: center;
+  }
+  .map-container {
+    height: 420px;
+    overflow: hidden;
+    border: 1px solid rgba(200,169,110,.2);
+    position: relative;
+  }
+  .map-container iframe {
+    width: 100%; height: 100%;
+    border: none;
+    filter: grayscale(.8) invert(.9) hue-rotate(180deg);
+    opacity: .85;
+  }
+  .address-block { margin-top: 32px; }
+  .address-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+    display: block;
+  }
+  .address-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--fg);
+  }
+
+  /* ── SOCIAL / CONTACT ── */
+  .contact-section {
+    padding: 80px 48px;
+    border-top: 1px solid rgba(200,169,110,.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .social-links {
+    display: flex;
+    gap: 24px;
+  }
+  .social-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color .2s;
+  }
+  .social-link:hover { color: var(--accent); }
+  .social-link .arrow { color: var(--accent); font-size: 14px; }
+  .contact-big {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-style: italic;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 40px 48px;
+    border-top: 1px solid rgba(200,169,110,.12);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .footer-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ── SCROLL ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+
+  /* ── HAMBURGER / MOBILE ── */
+  .hamburger { display: none; }
+
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links, .nav-cta { display: none; }
+    .hamburger {
+      display: block;
+      background: none;
+      border: none;
+      color: var(--fg);
+      font-size: 22px;
+      cursor: pointer;
+    }
+    .hero { padding: 0 24px 60px; }
+    .story { grid-template-columns: 1fr; padding: 80px 24px; gap: 48px; }
+    .story-images { height: 360px; }
+    .schedule-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .leaders-grid { grid-template-columns: 1fr; }
+    .leader-card { grid-template-columns: 1fr; }
+    .leader-photo { height: 300px; aspect-ratio: auto; }
+    .location-section { grid-template-columns: 1fr; padding: 80px 24px; }
+    .contact-section { flex-direction: column; gap: 32px; text-align: center; }
+    .social-links { flex-wrap: wrap; justify-content: center; }
+    footer { flex-direction: column; gap: 20px; text-align: center; }
+    .schedule-section, .stats-section, .leaders-section { padding: 80px 24px; }
+    .fullbleed-content { padding: 0 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-logo" style="display:flex;align-items:center;gap:12px">
+    <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank" style="color:var(--fg);display:flex" aria-label="Facebook">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </a>
+    <a href="https://www.youtube.com/@sids2025" target="_blank" style="color:var(--fg);display:flex" aria-label="YouTube">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    </a>
+    <a href="https://www.instagram.com/sids_iglesia/" target="_blank" style="color:var(--fg);display:flex" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+    </a>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#quienes-somos">Quiénes Somos</a></li>
+    <li><a href="#reuniones">Reuniones</a></li>
+    <li><a href="#liderazgo">Liderazgo</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+  </ul>
+  <a href="https://www.instagram.com/sids_iglesia/" target="_blank" class="nav-cta">Conectar</a>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg" id="heroBg"></div>
+  <div class="hero-tag">Santa Iglesia del Señor · La Plata, Argentina</div>
+  <h1 class="hero-title">
+    Una <em>comunidad</em><br>
+    que transforma<br>
+    vidas
+  </h1>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Fe · Esperanza · Amor</span>
+    <span class="marquee-item">Jueves 20:00hs</span>
+    <span class="marquee-item">Sábados 19:00hs</span>
+    <span class="marquee-item">Domingos 18:00hs</span>
+    <span class="marquee-item">La Plata · Buenos Aires</span>
+    <span class="marquee-item">Evangelio de Jesucristo</span>
+    <span class="marquee-item">Adoración · Comunión · Crecimiento</span>
+    <span class="marquee-item">Fe · Esperanza · Amor</span>
+    <span class="marquee-item">Jueves 20:00hs</span>
+    <span class="marquee-item">Sábados 19:00hs</span>
+    <span class="marquee-item">Domingos 18:00hs</span>
+    <span class="marquee-item">La Plata · Buenos Aires</span>
+    <span class="marquee-item">Evangelio de Jesucristo</span>
+    <span class="marquee-item">Adoración · Comunión · Crecimiento</span>
+  </div>
+</div>
+
+<!-- STORY / QUIÉNES SOMOS -->
+<section class="story" id="quienes-somos">
+  <div class="story-images reveal">
+    <div class="story-img">
+      <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80" alt="Adoración">
+    </div>
+    <div class="story-img">
+      <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80" alt="Comunidad">
+    </div>
+  </div>
+  <div class="story-text">
+    <span class="section-tag reveal">Nuestra historia</span>
+    <h2 class="section-title reveal reveal-delay-1">
+      El poder<br><em>transformador</em><br>de Cristo
+    </h2>
+    <div class="divider-line reveal reveal-delay-2"></div>
+    <p class="section-body reveal reveal-delay-2">
+      Santa Iglesia del Señor es una Iglesia Cristiana Evangélica comprometida con la predicación del Evangelio de Jesucristo, la enseñanza de la Palabra de Dios y el acompañamiento espiritual de las familias y la comunidad.
+    </p>
+    <p class="section-body reveal reveal-delay-3">
+      Creemos en el poder transformador de Jesucristo y trabajamos para que cada persona pueda conocer el amor de Dios, crecer en la fe y encontrar un lugar donde desarrollar su propósito.
+    </p>
+    <p class="section-body reveal reveal-delay-4">
+      Nuestra misión es llevar esperanza, restauración y vida a través del mensaje del Evangelio, formando discípulos comprometidos con Cristo y con su comunidad.
+    </p>
+  </div>
+</section>
+
+<!-- FULLBLEED QUOTE 1 -->
+<section class="fullbleed">
+  <div class="fullbleed-bg" id="parallax1"></div>
+  <div class="fullbleed-content reveal">
+    <p class="fullbleed-quote">
+      "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna."
+    </p>
+    <span class="fullbleed-attr">— Juan 3:16</span>
+  </div>
+</section>
+
+<!-- SCHEDULE -->
+<section class="schedule-section" id="reuniones">
+  <div class="schedule-header">
+    <div>
+      <span class="section-tag reveal">Nuestras reuniones</span>
+      <h2 class="section-title reveal reveal-delay-1">
+        Encontranos<br><em>cada semana</em>
+      </h2>
+    </div>
+    <p class="section-body reveal" style="max-width: 360px;">
+      Contamos con espacios especialmente preparados para la adoración, la enseñanza bíblica, la comunión y el crecimiento espiritual.
+    </p>
+  </div>
+  <div class="schedule-grid">
+    <div class="schedule-card reveal">
+      <div class="schedule-day">Jueves</div>
+      <div class="schedule-time">20:00</div>
+      <div class="schedule-desc">Reunión General<br>Predicación de la Palabra</div>
+    </div>
+    <div class="schedule-card reveal reveal-delay-2">
+      <div class="schedule-day">Sábados</div>
+      <div class="schedule-time">19:00</div>
+      <div class="schedule-desc">Reunión de Jóvenes<br>Alabanza y Adoración</div>
+    </div>
+    <div class="schedule-card reveal reveal-delay-3">
+      <div class="schedule-day">Domingos</div>
+      <div class="schedule-time">18:00</div>
+      <div class="schedule-desc">Reunión General<br>Comunión Familiar</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats-section">
+  <div class="stats-grid">
+    <div class="stat-item reveal">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Reuniones<br>por semana</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-1">
+      <span class="stat-num">2</span>
+      <span class="stat-label">Obispos<br>Líderes</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-2">
+      <span class="stat-num">100%</span>
+      <span class="stat-label">Compromiso<br>comunitario</span>
+    </div>
+    <div class="stat-item reveal reveal-delay-3">
+      <span class="stat-num">∞</span>
+      <span class="stat-label">Puertas<br>abiertas</span>
+    </div>
+  </div>
+</section>
+
+<!-- LEADERS -->
+<section class="leaders-section" id="liderazgo">
+  <span class="section-tag reveal">Nuestro liderazgo</span>
+  <h2 class="section-title reveal reveal-delay-1">
+    Guiados por<br><em>vocación y fe</em>
+  </h2>
+  <div class="leaders-grid">
+    <div class="leader-card reveal reveal-delay-2">
+      <div class="leader-photo">
+        <img src="https://sids-iglesia.vercel.app/_next/image?url=%2FObispo.jpg&w=600&q=75" alt="Obispo Edgardo Montenegro" onerror="this.src='https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80'">
+      </div>
+      <div class="leader-info">
+        <div class="leader-title-tag">Obispo</div>
+        <div class="leader-name">Dr. Edgardo Norberto Montenegro</div>
+        <p class="leader-bio">Lidera la congregación con dedicación, amor y servicio, acompañado por un equipo de líderes comprometidos con la obra de Dios.</p>
+      </div>
+    </div>
+    <div class="leader-card reveal reveal-delay-3">
+      <div class="leader-photo">
+        <img src="https://sids-iglesia.vercel.app/_next/image?url=%2FDra.jpg&w=600&q=75" alt="Dra. Magdalena Montenegro" onerror="this.src='https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80'">
+      </div>
+      <div class="leader-info">
+        <div class="leader-title-tag">Obispo</div>
+        <div class="leader-name">Dra. Magdalena Ciulla De Montenegro</div>
+        <p class="leader-bio">Desarrolla su ministerio con dedicación y amor, guiando a la congregación en el crecimiento espiritual y la formación de discípulos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FULLBLEED QUOTE 2 -->
+<section class="fullbleed">
+  <div class="fullbleed-bg fullbleed2-bg" id="parallax2"></div>
+  <div class="fullbleed-content reveal">
+    <p class="fullbleed-quote">
+      "¡Las puertas de Santa Iglesia del Señor están abiertas para vos y tu familia!"
+    </p>
+    <span class="fullbleed-attr">— Ministerio Santa Iglesia del Señor</span>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="location-section" id="ubicacion">
+  <div>
+    <span class="section-tag reveal">Nuestra ubicación</span>
+    <h2 class="section-title reveal reveal-delay-1">
+      <em>Encontranos</em><br>en La Plata
+    </h2>
+    <p class="section-body reveal reveal-delay-2">
+      Estamos ubicados en La Plata, Buenos Aires. Te esperamos con las puertas abiertas todos los jueves, sábados y domingos.
+    </p>
+    <div class="address-block reveal reveal-delay-3">
+      <span class="address-label">Dirección</span>
+      <div class="address-text">
+        Colegio Jesús de Nazareth<br>
+        Ing. Allan, Buenos Aires
+      </div>
+    </div>
+  </div>
+  <div class="map-container reveal reveal-delay-2">
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d204.60280482687168!2d-58.190065407558976!3d-34.86514946029389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a2d78a02f43253%3A0xf118fbba9ff02ca!2sColegio%20Jes%C3%BAs%20de%20Nazareth!5e0!3m2!1ses!2sar!4v1780336542615!5m2!1ses!2sar"
+      allowfullscreen=""
+      loading="lazy">
+    </iframe>
+  </div>
+</section>
+
+<!-- CONTACT / SOCIAL -->
+<section class="contact-section">
+  <div>
+    <span class="section-tag" style="display:block;margin-bottom:12px">Seguinos</span>
+    <div class="social-links">
+      <a href="https://www.instagram.com/sids_iglesia/" target="_blank" class="social-link">
+        <span class="arrow">→</span> Instagram
+      </a>
+      <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank" class="social-link">
+        <span class="arrow">→</span> Facebook
+      </a>
+      <a href="https://www.youtube.com/@sids2025" target="_blank" class="social-link">
+        <span class="arrow">→</span> YouTube
+      </a>
+    </div>
+  </div>
+  <div class="contact-big">
+    ¿Querés <em>conocernos?</em>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-copy">© 2026 Santa Iglesia del Señor · La Plata, Argentina</span>
+  <ul class="footer-links">
+    <li><a href="#quienes-somos">Quiénes Somos</a></li>
+    <li><a href="#reuniones">Reuniones</a></li>
+    <li><a href="#liderazgo">Liderazgo</a></li>
+    <li><a href="#ubicacion">Ubicación</a></li>
+  </ul>
+</footer>
+
+<script>
+  // Nav scroll effect
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Hero bg animation
+  document.getElementById('heroBg').classList.add('loaded');
+
+  // Parallax
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    const p1 = document.getElementById('parallax1');
+    const p2 = document.getElementById('parallax2');
+    if (p1) p1.style.transform = `translateY(${scrollY * .15}px) scale(1.1)`;
+    if (p2) p2.style.transform = `translateY(${scrollY * .1}px) scale(1.1)`;
+  });
+
+  // Intersection observer for reveal animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: .12, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Mobile menu stub
+  function toggleMenu() {
+    alert('Menú: Quiénes Somos | Reuniones | Liderazgo | Ubicación');
+  }
+</script>
+</body>
+</html>

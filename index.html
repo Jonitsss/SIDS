@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Santa Iglesia del Señor</title>
+  <meta name="description" content="Te esperamos con las puertas abiertas. Jueves 20hs, Sábado 19hs, Domingo 18hs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #050505;
+      --bg-secondary: #0F0F0F;
+      --surface: #171717;
+      --border: #242424;
+      --text: #FFFFFF;
+      --text-secondary: #A3A3A3;
+      --text-muted: #6B7280;
+      --accent: #F5F5F5;
+    }
+
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: var(--bg); }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    ::selection { background: var(--text); color: var(--bg); }
+
+    /* ─── Loader ─── */
+    .loader {
+      position: fixed; z-index: 200; inset: 0;
+      background: var(--bg);
+      display: grid; place-items: center;
+      transition: opacity 0.8s ease, visibility 0.8s ease;
+    }
+    .loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .loader-inner { display: flex; align-items: center; gap: 2px; }
+    .loader-bar {
+      width: 2px; height: 40px;
+      background: var(--text);
+      opacity: 0.3;
+    }
+    .loader-bar.active { opacity: 1; }
+
+    /* ─── Page ─── */
+    .page { opacity: 0; transition: opacity 0.8s ease; }
+    .page.visible { opacity: 1; }
+
+    /* ─── Navigation ─── */
+    .nav-wrap {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 90px;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+      display: flex; align-items: center;
+    }
+    .nav-wrap.scrolled {
+      background: var(--bg);
+      backdrop-filter: none;
+    }
+    .nav {
+      max-width: 1600px; margin: 0 auto; padding: 0 40px;
+      width: 100%;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-logo {
+      font-size: 14px; font-weight: 600; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text);
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 40px; }
+    .nav-links a {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px;
+      background: var(--text);
+      transition: width 0.4s ease;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ─── Layout ─── */
+    .container { max-width: 1600px; margin: 0 auto; padding: 0 40px; }
+    .content-narrow { max-width: 720px; margin: 0 auto; }
+
+    /* ─── Hero ─── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 80px;
+      padding: 120px 0;
+    }
+    .hero-content {
+      opacity: 0; transform: translateY(60px);
+      animation: heroFade 1.2s ease-out forwards;
+      animation-delay: 0.2s;
+    }
+    .hero-content .line {
+      display: block;
+      font-size: clamp(48px, 7.5vw, 120px);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      color: var(--text);
+    }
+    .hero-content .line:nth-child(2) { animation-delay: 0.32s; }
+    .hero-content .line:nth-child(3) { animation-delay: 0.44s; }
+    .hero-content .line:nth-child(4) { animation-delay: 0.56s; }
+    .hero-content .line:nth-child(5) { animation-delay: 0.68s; }
+
+    .hero-visual {
+      position: relative;
+      height: 70vh;
+      min-height: 500px;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+      opacity: 0; transform: translateY(60px);
+      animation: heroFade 1.2s ease-out forwards;
+      animation-delay: 0.4s;
+    }
+    .hero-visual-inner {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+    }
+    .hero-visual-inner > div {
+      background: var(--surface);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-visual-inner > div::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+    }
+    .hero-visual .block {
+      position: absolute;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .hero-visual .block:nth-child(1) { top: 8%; left: 6%; width: 38%; height: 42%; }
+    .hero-visual .block:nth-child(2) { top: 52%; right: 8%; width: 30%; height: 35%; }
+    .hero-visual .block:nth-child(3) { bottom: 6%; left: 10%; width: 45%; height: 28%; }
+
+    @keyframes heroFade {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Marquee ─── */
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 24px 0;
+    }
+    .marquee-track {
+      display: flex; width: max-content;
+      animation: marqueeScroll 40s linear infinite;
+    }
+    .marquee-track:hover { animation-play-state: paused; }
+    .marquee-item {
+      font-size: 13px; font-weight: 500; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted);
+      white-space: nowrap; padding: 0 64px;
+    }
+    .marquee-item span { color: var(--text); }
+    @keyframes marqueeScroll {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ─── Section ─── */
+    section { padding: 160px 0; }
+    section:last-of-type { padding-bottom: 0; }
+
+    .section-label {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .heading-lg {
+      font-size: clamp(36px, 4.5vw, 72px);
+      font-weight: 700;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .heading-md {
+      font-size: clamp(28px, 3vw, 48px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .heading-card {
+      font-size: 28px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    /* ─── Split Section ─── */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .split.reverse { direction: rtl; }
+    .split.reverse > * { direction: ltr; }
+
+    .split-visual {
+      position: relative;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    .split-visual.reveal { opacity: 1; transform: translateY(0); }
+    .split-visual.portrait { aspect-ratio: 3 / 4; }
+    .split-visual.landscape { aspect-ratio: 4 / 3; }
+
+    .split-visual .abstract {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+    }
+    .split-visual .abstract > div { background: var(--surface); }
+
+    .split-text {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    .split-text.reveal { opacity: 1; transform: translateY(0); }
+    .split-text p { color: var(--text-secondary); }
+    .split-text p + p { margin-top: 24px; }
+    .split-text .heading-md { margin-bottom: 24px; color: var(--text); }
+
+    /* ─── Stats ─── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 48px;
+    }
+    .stat {
+      text-align: center;
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .stat.reveal { opacity: 1; transform: translateY(0); }
+    .stat-number {
+      font-size: clamp(36px, 4vw, 64px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+
+    /* ─── Thesis ─── */
+    .thesis {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .thesis .heading-lg { margin-bottom: 32px; }
+    .thesis p {
+      color: var(--text-secondary);
+      font-size: 18px;
+      line-height: 1.8;
+    }
+
+    /* ─── Philosophy ─── */
+    .philosophy {
+      text-align: center;
+      padding: 160px 0;
+    }
+    .philosophy .statement {
+      font-size: clamp(36px, 5vw, 80px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ─── Cards Grid ─── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+    }
+    .card {
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 48px;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+      opacity: 0; transform: translateY(30px);
+    }
+    .card.reveal { opacity: 1; transform: translateY(0); }
+    .card:hover {
+      border-color: rgba(255,255,255,0.2);
+      transform: translateY(-4px);
+    }
+    .card-icon {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+      font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+    .card h3 { font-size: 28px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; margin-bottom: 12px; color: var(--text); }
+    .card p { font-size: 16px; color: var(--text-secondary); line-height: 1.7; }
+
+    /* ─── Schedule ─── */
+    .schedule-list { margin-top: 48px; }
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      gap: 48px;
+      opacity: 0; transform: translateX(-20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .schedule-item.reveal { opacity: 1; transform: translateX(0); }
+    .schedule-item:last-child { border-bottom: none; }
+    .schedule-item:hover { border-bottom-color: rgba(255,255,255,0.15); }
+    .schedule-day {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted);
+      min-width: 100px;
+    }
+    .schedule-time { font-size: 18px; color: var(--text); }
+    .schedule-desc {
+      margin-left: auto;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text);
+      transition: opacity 0.3s ease;
+    }
+    .schedule-item:hover .schedule-desc { opacity: 0.6; }
+
+    /* ─── Tags ─── */
+    .tag-group { display: flex; gap: 8px; margin-top: 48px; }
+    .tag {
+      font-size: 11px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 16px;
+      transition: border-color 0.3s ease, color 0.3s ease;
+    }
+    .tag:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+
+    /* ─── Map ─── */
+    .map-section { text-align: center; }
+    .map-frame {
+      margin-top: 48px;
+      border: 1px solid rgba(255,255,255,0.06);
+      overflow: hidden;
+      opacity: 0; transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .map-frame.reveal { opacity: 1; transform: translateY(0); }
+    .map-frame iframe {
+      display: block; width: 100%; height: 420px; border: 0;
+      filter: invert(1) hue-rotate(180deg) saturate(0.2) brightness(0.85);
+    }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      text-align: center;
+      padding: 160px 0;
+    }
+    .cta-section .heading-lg { margin-bottom: 16px; }
+    .cta-section p { color: var(--text-secondary); margin-bottom: 48px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 16px 32px;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text);
+      transition: background 0.3s ease, border-color 0.3s ease;
+      background: transparent;
+    }
+    .btn::after { content: '→'; transition: transform 0.3s ease; }
+    .btn:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .btn:hover::after { transform: translateX(4px); }
+
+    /* ─── Footer ─── */
+    footer {
+      padding: 120px 0 80px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 80px;
+    }
+    .footer-col h4 {
+      font-size: 12px; font-weight: 500; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 15px; color: var(--text-secondary);
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: color 0.3s ease;
+    }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      margin-top: 80px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; justify-content: space-between;
+      font-size: 13px; color: var(--text-muted);
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 1200px) {
+      .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 60px; padding: 120px 0 80px; min-height: auto; }
+      .hero-content .line { font-size: clamp(36px, 8vw, 64px); }
+      .hero-visual { height: 50vh; min-height: 300px; }
+      .split { grid-template-columns: 1fr; gap: 48px; }
+      .split.reverse { direction: ltr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr; gap: 48px; }
+      section { padding: 100px 0; }
+      .nav { padding: 0 24px; }
+      .container { padding: 0 24px; }
+    }
+    @media (max-width: 540px) {
+      .hero-content .line { font-size: 40px; }
+      .heading-lg { font-size: 36px; }
+      .heading-md { font-size: 28px; }
+      body { font-size: 16px; }
+      section { padding: 80px 0; }
+      .container { padding: 0 20px; }
+      .nav { padding: 0 20px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .schedule-item { flex-wrap: wrap; gap: 8px; }
+      .schedule-desc { margin-left: 0; }
+      .footer-bottom { flex-direction: column; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loader -->
+  <div class="loader" id="loader">
+    <div class="loader-inner" id="loaderBars"></div>
+  </div>
+
+  <!-- Nav -->
+  <div class="nav-wrap" id="navWrap">
+    <nav class="nav">
+      <div class="nav-logo" style="display:flex;align-items:center;gap:12px">
+        <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank" style="color:var(--text);display:flex" aria-label="Facebook">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@sids2025" target="_blank" style="color:var(--text);display:flex" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+        <a href="https://www.instagram.com/sids_iglesia/" target="_blank" style="color:var(--text);display:flex" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="#about">Quiénes Somos</a>
+        <a href="#reuniones">Reuniones</a>
+        <a href="#ubicacion">Ubicación</a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Page -->
+  <div class="page" id="page">
+
+    <!-- Hero -->
+    <section class="hero container" id="hero">
+      <div class="hero-content">
+        <span class="line" style="opacity:0;animation:heroFade 1.2s ease-out forwards;animation-delay:0.2s">SANTA</span>
+        <span class="line" style="opacity:0;animation:heroFade 1.2s ease-out forwards;animation-delay:0.32s">IGLESIA</span>
+        <span class="line" style="opacity:0;animation:heroFade 1.2s ease-out forwards;animation-delay:0.44s">DEL</span>
+        <span class="line" style="opacity:0;animation:heroFade 1.2s ease-out forwards;animation-delay:0.56s">SEÑOR</span>
+        <span class="line" style="opacity:0;animation:heroFade 1.2s ease-out forwards;animation-delay:0.68s;font-size:clamp(14px,1.5vw,24px);font-weight:400;letter-spacing:0.1em;color:var(--text-secondary);margin-top:32px;line-height:1.6">Jueves 20:00 hs · Domingo 18:00 hs</span>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-visual-inner">
+          <div style="grid-column:1">
+            <div class="block" style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+            <div class="block" style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+          </div>
+          <div style="grid-column:2">
+            <div class="block" style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Marquee -->
+    <div class="marquee">
+      <div class="marquee-track">
+        <span class="marquee-item">Bienvenidos a la casa de Dios <span>◆</span></span>
+        <span class="marquee-item">Fe · Esperanza · Amor <span>◆</span></span>
+        <span class="marquee-item">Cristo es el centro <span>◆</span></span>
+        <span class="marquee-item">Bienvenidos a la casa de Dios <span>◆</span></span>
+        <span class="marquee-item">Fe · Esperanza · Amor <span>◆</span></span>
+        <span class="marquee-item">Cristo es el centro <span>◆</span></span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <section class="container">
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-number" data-count="2019">0</div><div class="stat-label">Fundación</div></div>
+        <div class="stat"><div class="stat-number" data-count="100">0%</div><div class="stat-label">Compromiso</div></div>
+        <div class="stat"><div class="stat-number" data-count="3">0</div><div class="stat-label">Reuniones Semanales</div></div>
+        <div class="stat"><div class="stat-number" data-count="100">0+</div><div class="stat-label">Familias</div></div>
+        <div class="stat"><div class="stat-number" data-count="1">0</div><div class="stat-label">Misión</div></div>
+      </div>
+    </section>
+
+    <!-- Quiénes Somos -->
+    <section id="about">
+      <div class="container">
+        <div class="split reverse">
+          <div class="split-text">
+            <div class="section-label">Quiénes Somos</div>
+            <h2 class="heading-md">Una iglesia comprometida<br>con el Evangelio</h2>
+            <p>Santa Iglesia del Señor es una Iglesia Cristiana Evangélica comprometida con la predicación del Evangelio de Jesucristo, la enseñanza de la Palabra de Dios y el acompañamiento espiritual de las familias y la comunidad.</p>
+            <p>Nuestra congregación es guiada por los Obispos Dr. Edgardo Norberto Montenegro y Dra. Magdalena Ciulla De Montenegro, quienes desarrollan su ministerio con dedicación, amor y servicio, acompañados por un equipo de líderes comprometidos con la obra de Dios.</p>
+          </div>
+          <div class="split-visual portrait">
+            <div class="abstract">
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Philosophy -->
+    <div class="philosophy container">
+      <p class="statement">Creemos en el poder transformador de Jesucristo y trabajamos para que cada persona pueda conocer el amor de Dios.</p>
+    </div>
+
+    <!-- Obispo section -->
+    <section>
+      <div class="container">
+        <div class="split">
+          <div class="split-visual landscape">
+            <div class="abstract">
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+            </div>
+          </div>
+          <div class="split-text">
+            <div class="section-label">Nuestra Iglesia</div>
+            <h2 class="heading-md">Espacios para la adoración<br>y el crecimiento espiritual</h2>
+            <p>En Santa Iglesia del Señor contamos con espacios especialmente preparados para la adoración, la enseñanza bíblica, la comunión y el crecimiento espiritual.</p>
+            <p>Te invitamos a ser parte de nuestras reuniones y a vivir una experiencia transformadora en la presencia de Dios. ¡Las puertas de Santa Iglesia del Señor están abiertas para vos y tu familia!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cards / Valores -->
+    <section>
+      <div class="container">
+        <div class="section-label">Nuestros Valores</div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon">01</div>
+            <h3>Fe</h3>
+            <p>Creemos en el poder transformador de Jesucristo y en la Palabra de Dios como fundamento de nuestra vida.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">02</div>
+            <h3>Esperanza</h3>
+            <p>Llevamos un mensaje de esperanza y restauración a cada persona, familia y comunidad que alcanzamos.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon">03</div>
+            <h3>Amor</h3>
+            <p>Servimos con amor y dedicación, formando discípulos comprometidos con Cristo y con su comunidad.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reuniones -->
+    <section id="reuniones">
+      <div class="container">
+        <div class="split">
+          <div class="split-visual landscape">
+            <div class="abstract">
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+              <div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div><div style="display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:11px;letter-spacing:0.08em">imagen</div>
+            </div>
+          </div>
+          <div>
+            <div class="section-label">Nuestras Reuniones</div>
+            <h2 class="heading-md" style="margin-bottom:8px">Jueves y Domingos</h2>
+            <p style="color:var(--text-secondary);margin-bottom:0">Te esperamos con las puertas abiertas.</p>
+            <div class="schedule-list">
+              <div class="schedule-item">
+                <span class="schedule-day">Jueves</span>
+                <span class="schedule-time">20:00 hs</span>
+                <span class="schedule-desc">Reunión General</span>
+              </div>
+              <div class="schedule-item">
+                <span class="schedule-day">Sábados</span>
+                <span class="schedule-time">19:00 hs</span>
+                <span class="schedule-desc">Jóvenes</span>
+              </div>
+              <div class="schedule-item">
+                <span class="schedule-day">Domingos</span>
+                <span class="schedule-time">18:00 hs</span>
+                <span class="schedule-desc">Reunión General</span>
+              </div>
+            </div>
+            <div class="tag-group">
+              <span class="tag">Alabanza</span>
+              <span class="tag">Adoración</span>
+              <span class="tag">Comunión</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ubicación -->
+    <section id="ubicacion" class="map-section">
+      <div class="container">
+        <div class="section-label">Nuestra Ubicación</div>
+        <div class="map-frame">
+          <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d204.60280482687168!2d-58.190065407558976!3d-34.86514946029389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95a2d78a02f43253%3A0xf118fbba9ff02ca!2sColegio%20Jes%C3%BAs%20de%20Nazareth!5e0!3m2!1ses!2sar!4v1780336542615!5m2!1ses!2sar" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación de Santa Iglesia del Señor"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section container">
+      <h2 class="heading-lg">Sumate a nuestra<br>comunidad</h2>
+      <p>Las puertas están abiertas para vos y tu familia.</p>
+      <a class="btn" href="https://www.instagram.com/sids_iglesia/" target="_blank">Seguinos en Instagram</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <h4>Síguenos</h4>
+            <a href="https://www.facebook.com/MinisterioSantaIglesia" target="_blank">Facebook</a>
+            <a href="https://www.youtube.com/@sids2025" target="_blank">YouTube</a>
+            <a href="https://www.instagram.com/sids_iglesia/" target="_blank">Instagram</a>
+          </div>
+          <div class="footer-col">
+            <h4>Reuniones</h4>
+            <a href="#">Jueves 20:00 hs</a>
+            <a href="#">Sábados 19:00 hs</a>
+            <a href="#">Domingos 18:00 hs</a>
+          </div>
+          <div class="footer-col">
+            <h4>Dirección</h4>
+            <a href="https://www.google.com/maps?q=Colegio+Jes%C3%BAs+de+Nazareth" target="_blank">Colegio Jesús de Nazareth</a>
+            <a href="#">Ing. Allan, Buenos Aires</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>&copy; 2026 Santa Iglesia del Señor</span>
+          <span>Con amor, para la gloria de Dios</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // ─── Loader ───
+    (function() {
+      const loader = document.getElementById('loader');
+      const barsEl = document.getElementById('loaderBars');
+      const page = document.getElementById('page');
+      const totalBars = 12;
+      for (let i = 0; i < totalBars; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'loader-bar';
+        barsEl.appendChild(bar);
+      }
+      let index = 0;
+      const interval = setInterval(() => {
+        if (index < totalBars) {
+          barsEl.children[index].classList.add('active');
+          index++;
+        } else {
+          clearInterval(interval);
+          setTimeout(() => {
+            loader.classList.add('hidden');
+            page.classList.add('visible');
+          }, 400);
+        }
+      }, 60);
+    })();
+
+    // ─── Nav scroll ───
+    (function() {
+      const nav = document.getElementById('navWrap');
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            nav.classList.toggle('scrolled', window.scrollY > 60);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+    })();
+
+    // ─── Intersection Observer ───
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll(
+        '.split-visual, .split-text, .card, .stat, .schedule-item, .map-frame'
+      ).forEach(el => observer.observe(el));
+
+      // Stagger stats
+      document.querySelectorAll('.stat').forEach((el, i) => {
+        el.style.transitionDelay = `${i * 0.1}s`;
+      });
+
+      // Stagger cards
+      document.querySelectorAll('.card').forEach((el, i) => {
+        el.style.transitionDelay = `${i * 0.1}s`;
+      });
+
+      // Stagger schedule items
+      document.querySelectorAll('.schedule-item').forEach((el, i) => {
+        el.style.transitionDelay = `${i * 0.08}s`;
+      });
+    })();
+
+    // ─── Stat Counters ───
+    (function() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.dataset.count);
+            const suffix = el.textContent.replace(/[\d]/g, '');
+            let current = 0;
+            const step = Math.max(1, Math.floor(target / 40));
+            const interval = setInterval(() => {
+              current += step;
+              if (current >= target) {
+                current = target;
+                clearInterval(interval);
+              }
+              el.textContent = current + suffix;
+            }, 30);
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+
+      document.querySelectorAll('.stat-number[data-count]').forEach(el => observer.observe(el));
+    })();
+
+    // ─── Smooth scroll ───
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>
